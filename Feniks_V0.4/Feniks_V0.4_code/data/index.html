@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="style.css" />
+		<title>BBQ Master</title>
+		<script src="gauge.min.js"></script>
+	</head>
+	<body>
+		<div id="battery">
+			<div id="battery_border"></div>
+			<div id="battery_tip"></div>
+			<div id="battery_content"></div>
+		</div>
+		<!-- Injecting radial gauge -->
+		<canvas
+			id="Ambient"
+			data-type="radial-gauge"
+			data-width="1000"
+			data-height="1000"
+			data-units="°C"
+			data-title="Ambient"
+			data-value="0"
+			data-min-value="25"
+			data-max-value="200"
+			data-major-ticks="25,50,75,100,125,150,175,200"
+			data-minor-ticks="5"
+			data-stroke-ticks="true"
+			data-highlights='[
+    			{ "from": 100, "to": 125, "color": "rgba(255,255,255,.33)" }
+			]'
+			data-color-plate="rgba(50, 50, 50, 1)"
+			data-color-major-ticks="#f5f5f5"
+			data-color-minor-ticks="#ddd"
+			data-color-title="#fff"
+			data-color-units="#ccc"
+			data-color-numbers="#eee"
+			data-needle-type="line"
+			data-needle-start="10"
+			data-needle-end="98"
+			data-needle-width="2"
+			data-color-needle="rgba(255, 0, 0, 1)"
+			data-color-needle-end="rgba(255, 0, 0, 1)"
+			data-color-needle-shadow-down="rgba(0, 0, 0, 1)"
+			data-value-box="true"
+			data-animation-rule="dequint"
+			data-animation-duration="750"
+			data-animated-value="false"
+			data-animate-on-init="false"
+		></canvas>
+
+		<canvas
+			id="Meat"
+			data-type="radial-gauge"
+			data-width="1000"
+			data-height="1000"
+			data-units="°C"
+			data-title="Meat"
+			data-value="0"
+			data-min-value="0"
+			data-max-value="100"
+			data-major-ticks="0,10,20,30,40,50,60,70,80,90,100"
+			data-minor-ticks="10"
+			data-stroke-ticks="true"
+			data-highlights='[
+                { "from": 48, "to": 51, "color": "rgba(255,50,50,.5)" },
+                { "from": 51, "to": 54, "color": "rgba(255,110,80,.5)" },
+                { "from": 54, "to": 58, "color": "rgba(255,150,120,.5)" },
+                { "from": 58, "to": 62, "color": "rgba(200,100,50,.5)" },
+                { "from": 63, "to": 68, "color": "rgba(255,200,200,.75)" },
+                { "from": 73, "to": 78, "color": "rgba(255,200,0,.75)" }
+            ]'
+			data-color-plate="rgba(50, 50, 50, 1)"
+			data-color-major-ticks="#f5f5f5"
+			data-color-minor-ticks="#ddd"
+			data-color-title="#fff"
+			data-color-units="#ccc"
+			data-color-numbers="#eee"
+			data-needle-type="line"
+			data-needle-start="10"
+			data-needle-end="98"
+			data-needle-width="2"
+			data-color-needle="rgba(255, 0, 0, 1)"
+			data-color-needle-end="rgba(255, 0, 0, 1)"
+			data-color-needle-shadow-down="rgba(0, 0, 0, 1)"
+			data-value-box="true"
+			data-animation-rule="dequint"
+			data-animation-duration="750"
+			data-animated-value="false"
+			data-animate-on-init="false"
+		></canvas>
+	</body>
+	<script>
+		//retrieve the gauge elements
+		var gauge_meat = document.getElementsByTagName("canvas")[1];
+		var gauge_ambient = document.getElementsByTagName("canvas")[0];
+
+		//retrieve the current window sizes
+		var window_width = window.innerWidth;
+		var window_height = window.innerHeight;
+		setGaugeSize();
+		//resize gauges to fit the window
+		function setGaugeSize() {
+			var size;
+			if (window_width < window_height) {
+				if (window_width * 2 < window_height) {
+					size = window_width;
+				} else {
+					size = window_height / 2;
+				}
+			} else {
+				if (window_height * 2 < window_width) {
+					size = window_height;
+				} else {
+					size = window_width / 2;
+				}
+			}
+			size -= 50;
+			gauge_meat.setAttribute("data-width", size);
+			gauge_meat.setAttribute("data-height", size);
+			gauge_ambient.setAttribute("data-width", size);
+			gauge_ambient.setAttribute("data-height", size);
+
+			battery.style.transform = "scale(" + (size / 750).toString() + ")";
+			battery_content.style.width = "0%";
+			battery_content.style.backgroundColor = "rgb(128, 128, 128)";
+		}
+
+		//event listener calls a page reload whenever the window size is changed
+		window.addEventListener("resize", function () {
+			"use strict";
+			window.location.reload();
+		});
+
+		setInterval(function () {
+			var request = new XMLHttpRequest();
+			request.addEventListener("readystatechange", () => {
+				if (request.readyState == 4 && request.status == 200) {
+					var data = request.responseText.split(",");
+					gauge_meat.setAttribute("data-value", data[0]);
+					gauge_ambient.setAttribute("data-value", data[1]);
+					if (data[2] < 1.733 || data[2] > 2.8) {
+						battery_content.style.width = "0%";
+					} else {
+						var percentage = 77.352 * (data[2] - 1.733) ** 2;
+						if (percentage < 20) {
+							battery_content.style.backgroundColor =
+								"rgb(255, 0, 0)";
+						} else {
+							battery_content.style.backgroundColor =
+								"rgb(0, 255, 0)";
+						}
+						battery_content.style.width =
+							percentage.toString() + "%";
+					}
+					console.log(data);
+				} else if (request.readyState == 4) {
+					console.log(request.status);
+				}
+			});
+			request.open("GET", "data", true);
+			request.setRequestHeader("Cache-Control", "no-cache");
+			request.send();
+		}, 1000);
+	</script>
+</html>

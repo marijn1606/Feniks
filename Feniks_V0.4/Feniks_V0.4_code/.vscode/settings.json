@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "cmath": "cpp"
+    },
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.block": "ignore",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "ignore"
+}

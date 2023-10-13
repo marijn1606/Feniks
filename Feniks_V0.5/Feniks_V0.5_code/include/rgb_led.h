@@ -1,0 +1,1 @@
+void HSL_led(int pin, float H, float S, float L);

@@ -1,0 +1,3 @@
+.pio/build
+.vscode
+src/wifi_credentials.h
